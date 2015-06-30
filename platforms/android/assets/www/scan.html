@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<script charset="UTF-8" type="text/javascript"></script>
+		<script src="cordova.js"></script>
+		<script src='jquery-2.1.3.min.js' type="text/javascript"></script>
+		<script src="cordova_plugins.js"></script>
+
+	</head>
+
+	<body>
+		<!--<a href="#" class="btn" id="scanCode">Scan Code</a>-->
+		<div align="center" style="padding-top: 200px;">
+			<img src="img/scan.jpg" id="scanCode" alt="scan" class="scanImg"/>			
+		</div>
+
+		
+		<script type="text/javascript">
+//			window.location = 'http://www.baidu.com';	
+//			var ref = window.open('http://www.baidu.com', '_self', 'location=yes');
+//			ref.show();
+
+  document.addEventListener("deviceready", onDeviceReady, false);
+
+    // device APIs are available
+    //
+    function onDeviceReady() {
+        // external url
+//      var ref = window.open(encodeURI('http://www.baidu.com'), '_self', 'location=yes');
+			$('#scanCode').click(function(){
+				cloudSky.zBar.scan(
+					{
+					      text_title: "扫描二维码", // Android only
+					      text_instructions: "请将二维码放入框内", // Android only
+					      camera: "back", // defaults to "back"
+					      flash: "auto", // defaults to "auto". See Quirks
+					      drawSight: true //defaults to true, create a red sight/line in the center of the scanner view.
+					 },
+					 function(result){
+					 	if(result.indexOf("http")>=0){
+							var ref = window.open(encodeURI(result), '_self', 'location=yes');							
+						}
+					 },
+					 function(err){
+					    alert("error!!!");
+					 	alert(err);
+					 }
+					
+				);
+				
+				
+//				cordova.plugins.barcodeScanner.scan(
+//					function(result) {
+////						alert("We got a barcode\n" +
+////							"Result: " + result.text + "\n" +
+////							"Format: " + result.format + "\n" +
+////							"Cancelled: " + result.cancelled);
+//						if(result.text.indexOf("http")>=0){
+//							var ref = window.open(encodeURI(result.text), '_self', 'location=yes');							
+//						}
+//					},
+//					function(error) {
+//						alert("Scanning failed: " + error);
+//					}
+//				);				
+			})
+
+    }
+
+
+		</script>
+
+	</body>
+
+</html>
