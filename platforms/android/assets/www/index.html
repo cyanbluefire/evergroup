@@ -1,52 +1,66 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
-	<style type="text/css">
-		body, html,#allmap {width: 100%;height: 100%;overflow: hidden;margin:0;font-family:"微软雅黑";}
-	</style>
-	<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=cElCR5PGh4nlvqxeMb26Mmkr"></script>
-	<script type="text/javascript" src="http://developer.baidu.com/map/jsdemo/demo/convertor.js"></script>
-	<title>GPS转百度</title>
-</head>
-<body>
-	<div id="allmap"></div>
-</body>
+
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+		<script src="jquery-2.1.3.min.js" type="text/javascript"></script>
+		<style type="text/css">
+			body, html,#l-map {width: 100%;height: 100%;overflow: hidden;margin:0;}
+		</style>
+		<script type="text/javascript" src="http://api.map.baidu.com/api?type=quick&ak=cElCR5PGh4nlvqxeMb26Mmkr&v=1.0"></script>
+		<title>显示地图</title>
+	</head>
+
+	<body>
+		<div id="l-map"></div>
+	</body>
+
 </html>
 <script type="text/javascript">
-	// 百度地图API功能
-	//GPS坐标
-	var xx = 113.930046;
-	var yy = 22.545959;
-	var gpsPoint;
-	navigator.geolocation.getCurrentPosition(function(position){
-		gpsPoint = position;
-	});
-//	var gpsPoint = new BMap.Point(xx,yy);
+	$(function() {
+		function getLocation() {
+			navigator.geolocation.getCurrentPosition(function(position){
+				$.ajax({
+					type:"post",
+					url:"http://api.map.baidu.com/geoconv/v1/?coords="+position.coords.longitude+","+position.coords.latitude+"&from=1&to=5&ak=cElCR5PGh4nlvqxeMb26Mmkr",
+					async:true,
+					dataType:"json",
+					success:function(data){
+						showPosition(data.result[0].x,data.result[0].y);
+					}
+				});
+				
+			}, locationError);
+		}
 
-	//地图初始化
-	var bm = new BMap.Map("allmap");
-	bm.centerAndZoom(gpsPoint, 15);
-	bm.addControl(new BMap.NavigationControl());
+		function showPosition(x,y) {
+				var map = new BMap.Map("l-map");
+				map.centerAndZoom(new BMap.Point(x, y), 20);
+				map.addControl(new BMap.ZoomControl());  //添加地图缩放控件
+				var marker1 = new BMap.Marker(new BMap.Point(x, y));  //创建标注
+				map.addOverlay(marker1);                 // 将标注添加到地图中
+			}
+			// 定位失败时，执行的函数 
 
-	//添加谷歌marker和label
-	var markergps = new BMap.Marker(gpsPoint);
-	bm.addOverlay(markergps); //添加GPS标注
-	var labelgps = new BMap.Label("我是GPS标注哦",{offset:new BMap.Size(20,-10)});
-	markergps.setLabel(labelgps); //添加GPS标注
+		function locationError(error) {
+			switch (error.code) {
+				case error.PERMISSION_DENIED:
+					alert("User denied the request for Geolocation.");
+					break;
+				case error.POSITION_UNAVAILABLE:
+					alert("Location information is unavailable.");
+					break;
+				case error.TIMEOUT:
+					alert("The request to get user location timed out.");
+					break;
+				case error.UNKNOWN_ERROR:
+					alert("An unknown error occurred.");
+					break;
+			}
+		}
+		window.onload = getLocation;
+	})
 
-	//坐标转换完之后的回调函数
-	translateCallback = function (point){
-		var marker = new BMap.Marker(point);
-		bm.addOverlay(marker);
-		var label = new BMap.Label("我是百度标注哦",{offset:new BMap.Size(20,-10)});
-		marker.setLabel(label); //添加百度label
-		bm.setCenter(point);
-		alert(point.lng + "," + point.lat);
-	}
 
-	setTimeout(function(){
-		BMap.Convertor.translate(gpsPoint,0,translateCallback);     //真实经纬度转成百度坐标
-	}, 2000);
 </script>
