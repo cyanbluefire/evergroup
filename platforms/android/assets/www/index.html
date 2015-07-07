@@ -22,12 +22,16 @@
 
 	<body>
 		<div id="l-map"></div>
-
+		
 	</body>
 
 </html>
 <script type="text/javascript">
 	$(function() {
+		window.onload = getLocation;
+		window.locationX;
+		window.locationY;
+		var map;
 		function getLocation() {
 				if (navigator.geolocation) {
 					navigator.geolocation.getCurrentPosition(function(position) {
@@ -65,45 +69,106 @@
 		}
 
 		function showPosition(x, y) {
-			var map = new BMap.Map("l-map");
+			
+			map = new BMap.Map("l-map");
 			map.centerAndZoom(new BMap.Point(x, y), 20);
 			map.addControl(new BMap.ZoomControl()); //添加地图缩放控件
+			map.addControl(new BMap.ScaleControl({"offset":new BMap.Size(0, 20)}) );//添加比例尺控件
 			//定位
 			var marker_me = new BMap.Marker(new BMap.Point(x, y)); //创建标注
 			map.addOverlay(marker_me); // 将标注添加到地图中
 			console.log("x:" + x + " y:" + y);
+			window.locationX = x;
+			window.locationY = y;
+			
+			//请求服务器获取周边商家
+			getMerchants();
 			//标注商家
-			var myIcon = new BMap.Icon("img/ratio.png", new BMap.Size(53, 53));
-			var marker1 = new BMap.Marker(new BMap.Point(113.94049705331, 22.548550620923), {
-				icon: myIcon
-			}); //创建标注
-			map.addOverlay(marker1); // 将标注添加到地图中
-			marker1.addEventListener('click', startGroupChat);
-			//富标注测试
-			//				var htm = '<div><img src="img/ratio.png" alt="sex ratio"/></div>'
-			//				var RichMasrker = new BMapLib.RichMarker(htm,new BMap.Point(113.94249705331, 22.548550620923), {"anchor": new BMap.Size(-72, -84), "enableDragging": true});
-			//				RichMasrker.setContent('1');
-			//				map.addOverlay(RichMasrker);
-			//				RichMasrker.addEventListener('onclick',function(e){
-			//					alert(e.type);
-			//					alert(e.getCotent());
-			//				})
-			var htm1 = "<div id='overLay' style='width:93px;height:116px; left top no-repeat; position: absolute;'>" + "<img style='margin-left:9px;margin-top: 8px;' src='img/ratio.png' />" + "<p>1</p>" + "</div>",
-				myRichMarker1 = new BMapLib.RichMarker(htm1, new BMap.Point(113.94249705331, 22.548550620923), {
-					"anchor": new BMap.Size(-47, -116),
-					"enableDragging": true
-				});
-			map.addOverlay(myRichMarker1);
-			myRichMarker1.addEventListener('onclick', function(e) {
-				alert(e.type);
-				alert(e.target.getContent());
-			});
+//			var myIcon = new BMap.Icon("img/ratio.png", new BMap.Size(53, 53));
+//			var marker1 = new BMap.Marker(new BMap.Point(113.94049705331, 22.548550620923), {
+//				icon: myIcon
+//			}); 
+			//创建标注
+//			map.addOverlay(marker1); // 将标注添加到地图中
+//			marker1.addEventListener('click', startGroupChat);
+//			var htm1 = "<div><img src='img/ratio.png' alt='sex ratio'/><p style='display: none;'>1</p></div>"
+//			myRichMarker1 = new BMapLib.RichMarker(htm1, new BMap.Point(113.94249705331, 22.548550620923), {
+//					"anchor": new BMap.Size(-47, -116),
+//					"enableDragging": true
+//				});
+//			map.addOverlay(myRichMarker1);
+//			myRichMarker1.addEventListener('onclick', function(e) {
+//			console.log(e.target.getPosition().lng+" "+e.target.getPosition().lat);
+//			alert(e.target.getContent());
+//				
+//				var content = $(e.target.getContent());
+//				var name = $(content).children('p').html();
+//				alert(name);
+//			});
 		}
 
 		function startGroupChat() {
-			map.removeOverlay(marker1);
 			window.location = 'groupChat.html';
 		}
-		window.onload = getLocation;
+//		function getMerchants(){
+//			console.log('getMerchants');
+//			if(window.locationX == null || window.locationX == ""){
+//				return;
+//			}
+//			$.ajax({
+//				type:"post",
+//				url:"",
+//				async:true,
+//				data:{x:window.locationX,y:window.locationY,range:"100"},
+//				success:function(data){
+//					var counts = data.merchants.length;
+//					if(counts > 0){
+//						for(var i= 0;i < counts;i++)
+//						{
+//							var htm1 = "<div><img src='img/ratio.png' alt='sex ratio'/><p style='display: none;'>"+data.merchants[i].name+"</p></div>"
+//							myRichMarker1 = new BMapLib.RichMarker(htm1, new BMap.Point(data.merchants[i].positionX, data.merchants[i].positionY));
+//							map.addOverlay(myRichMarker1);
+//							//点击事件
+//							myRichMarker1.addEventListener('onclick', function(e) {
+//							var content = $(e.target.getContent());
+//							var name = $(content).children('p').html();
+//							alert(name);
+//							window.location = 'groupChat.html';						
+//							});
+//						}
+//					}else{
+//						alert('附近没有可以群聊的哦');
+//					}
+//						
+//				},
+//				error:function(err){
+//					alert(err);
+//				}
+//			});
+//		}
+		function getMerchants(){
+			var data = {merchants:[{id:1,name:"KFC",positionX:113.94249705331,positionY:22.548550620923,tatio:60},
+						{id:2,name:"MacDonald",positionX:113.94049705331,positionY:22.548550620923,tatio:60}]}
+			var counts = data.merchants.length;
+			if(counts > 0){
+				for(var i= 0;i < counts;i++)
+				{
+					var htm1 = "<div><img src='img/ratio.png' alt='sex ratio'/><p id='merchantID' style='display: none;'>"+data.merchants[i].id+"</p>"+"<p id='merchantName' style='display: none;'>"+data.merchants[i].name+"</p></div>"
+					myRichMarker1 = new BMapLib.RichMarker(htm1, new BMap.Point(data.merchants[i].positionX, data.merchants[i].positionY));
+					map.addOverlay(myRichMarker1);
+					//点击事件
+					myRichMarker1.addEventListener('onclick', function(e) {
+					var content = $(e.target.getContent());
+					var name = $(content).children('p').html();
+					alert(name);
+					var id = $(content).children('#')
+					startGroupChat();					
+					});
+				}
+			}else{
+				alert('附近没有可以群聊的哦');
+			}
+		}
+		}
 	})
 </script>
